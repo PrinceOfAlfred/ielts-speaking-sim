@@ -41,6 +41,7 @@ const SpeechRecorder = ({ relevanceContext, onAnalysisComplete }) => {
         {isRecording ? "Stop Recording" : "Start Recording"}
         {isAnalyzing && " (Analyzing...)"}
       </button>
+
       {error && <div className="error-message">{error}</div>}
     </div>
   );

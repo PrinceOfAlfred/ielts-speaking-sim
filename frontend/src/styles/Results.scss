@@ -65,4 +65,13 @@
       cursor: not-allowed;
     }
   }
+
+  .error-message {
+    color: var(--primary-red);
+    background: #ffebee;
+    padding: 1rem;
+    border-radius: 4px;
+    margin: 1rem auto;
+    max-width: 80%;
+  }
 }
