@@ -118,13 +118,16 @@ export const useAudioRecorder = () => {
 
   const analyzeSpeech = async (audioBlob, relevanceContext) => {
     setIsAnalyzing(true);
+    const apiEndpoint =
+      "https://ielts-speaking-simulator-backend.vercel.app/api/analyze-speech";
+
     try {
       const compressedBlob = await compressAudio(audioBlob);
       const formData = new FormData();
       formData.append("user_audio_file", compressedBlob, "audio.wav");
       formData.append("relevance_context", relevanceContext);
 
-      const response = await axios.post("/api/analyze-speech", formData);
+      const response = await axios.post(apiEndpoint, formData);
       return response.data;
     } catch (err) {
       setError("Analysis failed. Please try again.");
