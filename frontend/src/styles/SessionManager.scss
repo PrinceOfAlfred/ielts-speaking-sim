@@ -1,0 +1,35 @@
+.session-manager {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  width: 100%;
+
+  .mode-toggle {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+
+    button {
+      padding: 1.5rem 3rem;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background-color: var(--light-gray);
+      color: var(--text-primary);
+      transition: all var(--transition-speed);
+      border: 2px solid var(--text-primary);
+
+      &:hover {
+        transform: translateY(-2px);
+        opacity: 0.9;
+      }
+
+      &.active {
+        background-color: var(--primary-blue);
+        color: white;
+      }
+    }
+  }
+}
