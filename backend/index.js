@@ -14,12 +14,7 @@ const app = express();
 const upload = multer();
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const cache = new NodeCache({ stdTTL: 3600 }); // Cache for 1 hour
-
 const port = process.env.PORT || 5000;
-const allowedOrigins = [
-  "http://localhost:5173",
-  "https://your-netlify-url.netlify.app", // You'll add this later
-];
 
 // Middleware
 app.use(cors());
@@ -130,7 +125,7 @@ app.post(
       console.error("Error details:", errorMessage);
       res.status(500).json({
         error: errorMessage,
-        details: process.env.NODE_ENV === "development" ? error : undefined,
+        details: error,
       });
     }
   }
