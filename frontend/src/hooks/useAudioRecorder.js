@@ -130,6 +130,20 @@ export const useAudioRecorder = () => {
       const response = await axios.post(apiEndpoint, formData);
       return response.data;
     } catch (err) {
+      if (err.code === "ERR_NETWORK") {
+        console.error("Network error:", err);
+        setError(
+          "Connection failed. Please check your internet connection and try again."
+        );
+        throw err;
+      }
+
+      if (err.response?.status === 504) {
+        console.error("Request timed out:", err);
+        setError("Request timed out. Please try again.");
+        throw err;
+      }
+      
       setError("Analysis failed. Please try again.");
       throw err;
     } finally {

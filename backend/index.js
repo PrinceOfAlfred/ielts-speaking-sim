@@ -15,9 +15,27 @@ const upload = multer();
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const cache = new NodeCache({ stdTTL: 3600 }); // Cache for 1 hour
 const port = process.env.PORT || 5000;
+const baseURL = "https://api.speechace.co/api/scoring/speech/v9/json";
+const allowedOrigins = [
+  "https://ielts-speaking-sim.vercel.app",
+  "http://localhost:5173", // for local development
+];
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    methods: ["GET", "POST"],
+    credentials: true,
+    optionsSuccessStatus: 200,
+  })
+);
 app.use(express.json());
 app.use(compression());
 app.use(expressCache());
@@ -67,13 +85,14 @@ app.post(
       form.append("relevance_context", req.body.relevance_context);
 
       const speechaceResponse = await axios.post(
-        `https://api.speechace.co/api/scoring/speech/v9/json?key=${process.env.SPEECHACE_KEY}`,
+        `${baseURL}?key=${process.env.SPEECHACE_KEY}`,
         form,
         {
           headers: {
             ...form.getHeaders(),
             Accept: "application/json",
           },
+          timeout: 30000,
         }
       );
 
