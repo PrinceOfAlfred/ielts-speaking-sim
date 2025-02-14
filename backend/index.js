@@ -16,6 +16,14 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const cache = new NodeCache({ stdTTL: 3600 }); // Cache for 1 hour
 const port = process.env.PORT || 5000;
 const baseURL = "https://api.speechace.co/api/scoring/speech/v9/json";
+const OPENAI_PROMPT = `
+            Act as an IELTS examiner. Provide feedback on this response:
+            - Correct grammatical errors.
+            - Suggest vocabulary improvements.
+            - Give pronunciation tips (e.g., "Try pronouncing 'schedule' as 'sked-jool'").
+            Use the scores provided to guide your feedback.
+            Format your response in the following JSON format: { "feedback": "..." }
+          `;
 const allowedOrigins = [
   "https://ielts-speaking-sim.vercel.app",
   "http://localhost:5173", // for local development
@@ -111,14 +119,7 @@ app.post(
         messages: [
           {
             role: "system",
-            content: `
-            Act as an IELTS examiner. Provide feedback on this response:
-            - Correct grammatical errors.
-            - Suggest vocabulary improvements.
-            - Give pronunciation tips (e.g., "Try pronouncing 'schedule' as 'sked-jool'").
-            Use the scores provided to guide your feedback.
-            Format your response in the following JSON format: { "feedback": "..." }
-          `,
+            content: OPENAI_PROMPT,
           },
           {
             role: "user",
