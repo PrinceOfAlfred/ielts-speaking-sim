@@ -10,17 +10,8 @@ export const useAudioRecorder = () => {
 
   const initializeRecorder = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          channelCount: 1,
-          sampleRate: 16000,
-        },
-      });
-      mediaRecorder.current = new MediaRecorder(stream, {
-        mimeType: "audio/webm",
-        audioBitsPerSecond: 16000,
-      });
-
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder.current = new MediaRecorder(stream);
       mediaRecorder.current.ondataavailable = (e) => {
         audioChunks.current.push(e.data);
       };
@@ -66,7 +57,7 @@ export const useAudioRecorder = () => {
 
     try {
       const formData = new FormData();
-      formData.append("user_audio_file", audioBlob, "audio.wav");
+      formData.append("user_audio_file", audioBlob);
       formData.append("relevance_context", relevanceContext);
 
       const response = await axios.post(apiEndpoint, formData);
