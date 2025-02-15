@@ -15,15 +15,30 @@ const upload = multer();
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const cache = new NodeCache({ stdTTL: 3600 }); // Cache for 1 hour
 const port = process.env.PORT || 5000;
-const baseURL = "https://api.speechace.co/api/scoring/speech/v9/json";
-const OPENAI_PROMPT = `
-            Act as an IELTS examiner. Provide feedback on this response:
-            - Correct grammatical errors.
-            - Suggest vocabulary improvements.
-            - Give pronunciation tips (e.g., "Try pronouncing 'schedule' as 'sked-jool'").
-            Use the scores provided to guide your feedback.
-            Format your response in the following JSON format: { "feedback": "..." }
-          `;
+const speechaceURL = `https://api.speechace.co/api/scoring/speech/v9/json?key=${process.env.SPEECHACE_KEY}`;
+const OPENAI_PROMPT = `# ROLE:
+  You are an expert IELTS examiner who specializes in providing expert feedback on an examinee's speech. The speaker will be using you to practice their speaking skills and improve their IELTS score.
+  
+  # TASK:
+  Your task is to provide detailed feedback on the speaker's pronunciation, fluency, grammar, vocabulary, and coherence.
+  You will be given a transcript, a set of IELTS scores and an array of analysed pronunciation data for each word, syllable, and phoneme in the speech. You will use that data to provide feedback on the speaker's text or speech.
+  The feedback should identify errors and provide guidance for improvement. For example:
+    - When providing feedback on pronunciation - "Try pronouncing 'schedule' as 'sked-jool'".
+    - When providing feedback on fluency - "Try to speak more smoothly and naturally. Take your time with your speech".
+    - When providing feedback on grammar - "Use the past tense to describe past events".
+    - When providing feedback on vocabulary - "Use a wider range of vocabulary to express your ideas (e.g. 'Instead of saying "important", use a synonym like "crucial"'".
+    - When providing feedback on coherence - "Try to link your ideas more clearly and logically. You can do this by taking a few moments to think about what to say before you say it".
+  The feedback should be clear and actionable, helping users improve their spoken English.
+  
+  # CONTEXT
+  Here are the variables you'll use to grade the speaker's speech:
+  The "word_score_list" node contains pronunciation scores and metrics for each word, syllable, and phoneme within the utterance - use that to provide phoneme-level analysis feedback on pronunciation.
+  The "ielts_score" node contains An overall score on an IELTS scale of 0 to 9.0, in addition to subscores for: Fluency, Pronunciation, Grammar, Vocabulary, Coherence.
+  The "transcript" node contains the speech-to-text transcript of what the user has said.
+
+  Use the information to provide detailed feedback on the speaker's pronunciation, fluency, grammar, vocabulary, and coherence. 
+  Format your response in the following JSON format: { "feedback": "..." }
+`;
 const allowedOrigins = [
   "https://ielts-speaking-sim.vercel.app",
   "http://localhost:5173", // for local development
@@ -92,38 +107,42 @@ app.post(
       form.append("dialect", "en-us");
       form.append("relevance_context", req.body.relevance_context);
 
-      const speechaceResponse = await axios.post(
-        `${baseURL}?key=${process.env.SPEECHACE_KEY}`,
-        form,
-        {
-          headers: {
-            ...form.getHeaders(),
-            Accept: "application/json",
-          },
-          timeout: 30000,
-        }
-      );
+      const config = {
+        headers: {
+          ...form.getHeaders(),
+          Accept: "application/json",
+          connection: "keep-alive",
+        },
+        timeout: 30000,
+      };
+
+      const speechaceResponse = await axios.post(speechaceURL, form, config);
 
       if (speechaceResponse.data.status !== "success") {
+        console.error("Speechace response:", speechaceResponse.data);
         throw new Error(
           `Speechace analysis failed: ${JSON.stringify(speechaceResponse.data)}`
         );
       }
 
-      const { transcript, ielts_score, relevance } =
+      const { transcript, ielts_score, relevance, word_score_list } =
         speechaceResponse.data.speech_score;
 
       // 2. Then send to OpenAI with the transcript
       const openaiResponse = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: "gpt-4o",
         messages: [
           {
-            role: "system",
+            role: "developer",
             content: OPENAI_PROMPT,
           },
           {
             role: "user",
-            content: JSON.stringify({ transcript, ielts_score }),
+            content: JSON.stringify({
+              transcript,
+              ielts_score,
+              word_score_list,
+            }),
           },
         ],
         response_format: { type: "json_object" },
