@@ -52,7 +52,7 @@ const Part2LongTurn = ({ onNext }) => {
   };
 
   const handleSubmitAnswer = async (audioBlob) => {
-    const relevanceContext = JSON.stringify({ topic: cueCard.topic, notes });
+    const relevanceContext = JSON.stringify(cueCard.topic);
     try {
       const result = await analyzeSpeech(audioBlob, relevanceContext);
       updateResult("part2", {

@@ -51,10 +51,7 @@ const Part3Discussion = ({ onNext }) => {
   };
 
   const handleSubmitAnswer = async (audioBlob) => {
-    const relevanceContext = JSON.stringify({
-      notes,
-      questions: part3Questions,
-    });
+    const relevanceContext = JSON.stringify(part3Questions);
     try {
       const result = await analyzeSpeech(audioBlob, relevanceContext);
       updateResult("part3", {

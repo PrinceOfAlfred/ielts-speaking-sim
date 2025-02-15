@@ -65,7 +65,7 @@ const TestResults = () => {
         `Fluency: ${results?.result.scores.fluency || "N/A"}/9`,
         `Pronunciation: ${results?.result.scores.pronunciation || "N/A"}/9`,
         `Grammar: ${results?.result.scores.grammar || "N/A"}/9`,
-        `Vocabulary: ${results?.result.scores.vocabulary || "N/A"}/9`,
+        `Vocabulary: ${results?.result.scores.vocab || "N/A"}/9`,
         `Coherence: ${results?.result.scores.coherence || "N/A"}/9`,
         `Overall: ${results?.result.scores.overall || "N/A"}/9`,
       ];
@@ -116,6 +116,7 @@ const TestResults = () => {
                 <p>{results?.result.transcript || "N/A"}</p>
               </div>
 
+              <h4>Scores:</h4>
               <div className="scores">
                 <div className="score-item">
                   <span className="score-label">Fluency:</span>
@@ -155,8 +156,8 @@ const TestResults = () => {
                 </div>
               </div>
 
+              <h4>Feedback:</h4>
               <div className="feedback">
-                <h4>Feedback:</h4>
                 <p>{results?.result.feedback || "N/A"}</p>
               </div>
             </>
